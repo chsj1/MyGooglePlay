@@ -1,0 +1,106 @@
+package com.itheima.googleplay_24.fragment;
+
+import android.os.SystemClock;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.ListView;
+
+import com.itheima.googleplay_24.base.BaseFragment;
+import com.itheima.googleplay_24.base.ItemAdapter;
+import com.itheima.googleplay_24.base.LoadingPager;
+import com.itheima.googleplay_24.bean.ItemInfoBean;
+import com.itheima.googleplay_24.factory.ListViewFactory;
+import com.itheima.googleplay_24.holder.ItemHolder;
+import com.itheima.googleplay_24.manager.DownLoadInfo;
+import com.itheima.googleplay_24.manager.DownLoadManager;
+import com.itheima.googleplay_24.protocol.GameProtocol;
+
+import java.util.List;
+
+/**
+ * 创建者     伍碧林
+ * 创建时间   2016/7/6 08:56
+ * 描述	      ${TODO}
+ *
+ * 更新者     $Author$
+ * 更新时间   $Date$
+ * 更新描述   ${TODO}
+ */
+public class GameFragment extends BaseFragment {
+
+    private List<ItemInfoBean> mDatas;
+    private GameProtocol       mProtocol;
+    private GameAdpater mAdapter;
+
+    /**
+     * @return
+     * @des 真正在子线程中开始加载具体的数据
+     * @called 外界需要加载数据的时候, 如果调用了triggerLoadData()方法的时候
+     */
+    @Override
+    public LoadingPager.LoadedResult initData() {
+        mProtocol = new GameProtocol();
+        try {
+            mDatas = mProtocol.loadData(0);
+            return checkResResult(mDatas);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return LoadingPager.LoadedResult.ERROR;
+        }
+    }
+
+    /**
+     * @return
+     * @des 1.决定成功视图长什么样子-->xml
+     * @des 2.数据和视图的绑定-->因为此时数据已经加载回来
+     * @call 外界需要加载数据的时候, 如果调用了triggerLoadData()方法的时候,数据加载完成,数据加载成功
+     */
+    @Override
+    public View initSuccessView() {
+        ListView listView = ListViewFactory.createListView();
+        mAdapter = new GameAdpater(listView, mDatas);
+        listView.setAdapter(mAdapter);
+        return listView;
+    }
+
+    class GameAdpater extends ItemAdapter {
+        public GameAdpater(AbsListView absListView, List<ItemInfoBean> dataSource) {
+            super(absListView, dataSource);
+        }
+
+        @Override
+        public List<ItemInfoBean> onLoadMore() throws Exception {
+            SystemClock.sleep(2000);
+            return mProtocol.loadData(mDatas.size());
+        }
+    }
+    @Override
+    public void onResume() {
+        //添加观察者
+        //adapter-->所有的观察者
+        if (mAdapter != null) {
+            List<ItemHolder> itemHolders = mAdapter.mItemHolders;
+            for (ItemHolder itemHolder : itemHolders) {
+                DownLoadManager.getInstance().addObserver(itemHolder);
+
+                //手动发布最新的DownLoadInfo的状态
+                DownLoadInfo downLoadInfo = DownLoadManager.getInstance().getDownLoadInfo(itemHolder.mData);
+                DownLoadManager.getInstance().notifyObservers(downLoadInfo);
+            }
+
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        //移除观察者
+        if (mAdapter != null) {
+            List<ItemHolder> itemHolders = mAdapter.mItemHolders;
+            for (ItemHolder itemHolder : itemHolders) {
+                DownLoadManager.getInstance().deleteObserver(itemHolder);
+            }
+        }
+        super.onPause();
+    }
+}

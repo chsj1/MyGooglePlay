@@ -1,0 +1,29 @@
+package com.itheima.googleplay_24.factory;
+
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
+import android.widget.ListView;
+
+import com.itheima.googleplay_24.utils.UIUtils;
+
+/**
+ * 创建者     伍碧林
+ * 创建时间   2016/7/9 11:16
+ * 描述	      ${TODO}
+ *
+ * 更新者     $Author$
+ * 更新时间   $Date$
+ * 更新描述   ${TODO}
+ */
+public class ListViewFactory {
+    public static ListView createListView() {
+        ListView listView = new ListView(UIUtils.getContext());
+        //对listView做一些常规的属性设置
+        listView.setDivider(null);
+        listView.setCacheColorHint(Color.TRANSPARENT);//2.3
+
+        listView.setSelector(new ColorDrawable(Color.TRANSPARENT));
+
+        return listView;
+    }
+}

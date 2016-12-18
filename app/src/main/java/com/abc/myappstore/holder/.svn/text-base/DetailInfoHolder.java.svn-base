@@ -1,0 +1,81 @@
+package com.itheima.googleplay_24.holder;
+
+import android.support.v4.view.ViewCompat;
+import android.view.View;
+import android.view.animation.OvershootInterpolator;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
+
+import com.itheima.googleplay_24.R;
+import com.itheima.googleplay_24.base.BaseHolder;
+import com.itheima.googleplay_24.bean.ItemInfoBean;
+import com.itheima.googleplay_24.conf.Constants;
+import com.itheima.googleplay_24.utils.StringUtils;
+import com.itheima.googleplay_24.utils.UIUtils;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+import butterknife.ButterKnife;
+import butterknife.InjectView;
+
+/**
+ * 创建者     伍碧林
+ * 创建时间   2016/7/11 15:09
+ * 描述	      ${TODO}
+ *
+ * 更新者     $Author$
+ * 更新时间   $Date$
+ * 更新描述   ${TODO}
+ */
+public class DetailInfoHolder extends BaseHolder<ItemInfoBean> {
+
+    @InjectView(R.id.app_detail_info_iv_icon)
+    ImageView mAppDetailInfoIvIcon;
+    @InjectView(R.id.app_detail_info_tv_name)
+    TextView  mAppDetailInfoTvName;
+    @InjectView(R.id.app_detail_info_rb_star)
+    RatingBar mAppDetailInfoRbStar;
+    @InjectView(R.id.app_detail_info_tv_downloadnum)
+    TextView  mAppDetailInfoTvDownloadnum;
+    @InjectView(R.id.app_detail_info_tv_version)
+    TextView  mAppDetailInfoTvVersion;
+    @InjectView(R.id.app_detail_info_tv_time)
+    TextView  mAppDetailInfoTvTime;
+    @InjectView(R.id.app_detail_info_tv_size)
+    TextView  mAppDetailInfoTvSize;
+
+    @Override
+    public View initHolderViewAndFindViews() {
+        View holderView = View.inflate(UIUtils.getContext(), R.layout.item_detail_info, null);
+        //找孩子
+        ButterKnife.inject(this, holderView);
+
+        //针对holderView做一个翻转动画
+        ViewCompat.animate(holderView).rotationX(360)
+                .setInterpolator(new OvershootInterpolator(4))
+                .setDuration(1000)
+                .start();
+
+        return holderView;
+    }
+
+    @Override
+    public void refreshHolderView(ItemInfoBean data) {
+        mAppDetailInfoTvName.setText(data.name);
+
+        String date = UIUtils.getResources().getString(R.string.detailDate, data.date);
+        String downLoadNum = UIUtils.getResources().getString(R.string.detailDownLoadNum, data.downloadNum);
+        String size = UIUtils.getResources().getString(R.string.detailSize, StringUtils.formatFileSize(data.size));
+        String version = UIUtils.getResources().getString(R.string.detailVersion, data.version);
+
+
+        mAppDetailInfoTvDownloadnum.setText(downLoadNum);
+        mAppDetailInfoTvSize.setText(size);
+        mAppDetailInfoTvTime.setText(date);
+        mAppDetailInfoTvVersion.setText(version);
+
+
+        mAppDetailInfoRbStar.setRating(data.stars);
+        ImageLoader.getInstance().displayImage(Constants.URLS.IMGBASEURL + data.iconUrl, mAppDetailInfoIvIcon);
+    }
+}

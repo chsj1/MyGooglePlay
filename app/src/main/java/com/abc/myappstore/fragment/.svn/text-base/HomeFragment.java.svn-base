@@ -1,0 +1,282 @@
+package com.itheima.googleplay_24.fragment;
+
+import android.os.SystemClock;
+import android.view.View;
+import android.widget.AbsListView;
+import android.widget.ListView;
+
+import com.itheima.googleplay_24.base.BaseFragment;
+import com.itheima.googleplay_24.base.ItemAdapter;
+import com.itheima.googleplay_24.base.LoadingPager;
+import com.itheima.googleplay_24.bean.HomeBean;
+import com.itheima.googleplay_24.bean.ItemInfoBean;
+import com.itheima.googleplay_24.factory.ListViewFactory;
+import com.itheima.googleplay_24.holder.HomePictureHolder;
+import com.itheima.googleplay_24.holder.ItemHolder;
+import com.itheima.googleplay_24.manager.DownLoadInfo;
+import com.itheima.googleplay_24.manager.DownLoadManager;
+import com.itheima.googleplay_24.protocol.HomeProtocol;
+
+import java.util.List;
+
+/**
+ * 创建者     伍碧林
+ * 创建时间   2016/7/6 08:56
+ * 描述	      动态添加和移除观察者
+ *
+ * 更新者     $Author$
+ * 更新时间   $Date$
+ * 更新描述   ${TODO}
+ */
+public class HomeFragment extends BaseFragment {
+
+    private List<String>       mDatas;
+    private List<String>       mPictureUrls;
+    private List<ItemInfoBean> mItemInfoBeanList;
+    private HomeProtocol       mProtocol;
+    private HomeBaseAdapter    mAdapter;
+
+    /**
+     * @return
+     * @des 真正在子线程中开始加载具体的数据
+     * @called 外界需要加载数据的时候, 如果调用了triggerLoadData()方法的时候
+     */
+    @Override
+    public LoadingPager.LoadedResult initData() {
+       /* try {
+            //1.创建okHttpClient对象
+            OkHttpClient okHttpClient = new OkHttpClient();
+            //2.创建请求对象
+            //http://localhost:8080/GooglePlayServer/home?index=0
+            String url = Constants.URLS.BASEURL + "home";
+
+            //拼接参数
+            Map<String, Object> paramsMap = new HashMap<>();
+            paramsMap.put("index", 0);
+
+            String paramsMapStr = HttpUtils.getUrlParamsByMap(paramsMap);
+
+            url = url + "?" + paramsMapStr;
+            LogUtils.s(url);
+
+            Request request = new Request.Builder().get().url(url).build();
+
+            //3.发起请求-->同步
+            Response response = okHttpClient.newCall(request).execute();
+
+            if (response.isSuccessful()) {//有响应
+                String resultJsonString = response.body().string();
+                //完成json的解析
+                Gson gson = new Gson();
+                HomeBean homeBean = gson.fromJson(resultJsonString, HomeBean.class);
+
+                LoadingPager.LoadedResult state = checkResResult(homeBean);
+                if (state != LoadingPager.LoadedResult.SUCCESS) {//出现问题,homeBean==null
+                    return state;
+                }
+
+                mItemInfoBeanList = homeBean.list;
+                mPictureUrls = homeBean.picture;
+
+                state = checkResResult(mItemInfoBeanList);
+                if (state != LoadingPager.LoadedResult.SUCCESS) {//出现了问题,mItemInfoBeanList.size==0
+                    return state;
+                }
+
+                state = checkResResult(mPictureUrls);
+                if (state != LoadingPager.LoadedResult.SUCCESS) {//出现了问题,mPictureUrls.size==0
+                    return state;
+                }
+
+                return state;//这个时候的state肯定就是success
+
+            } else {
+                return LoadingPager.LoadedResult.ERROR;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            return LoadingPager.LoadedResult.ERROR;
+        }*/
+
+        /*--------------- 对HomeFragment里面的网络请求做了简单的封装以后 ---------------*/
+        try {
+            mProtocol = new HomeProtocol();
+            HomeBean homeBean = mProtocol.loadData(0);
+
+            LoadingPager.LoadedResult state = checkResResult(homeBean);
+            if (state != LoadingPager.LoadedResult.SUCCESS) {//出现问题,homeBean==null
+                return state;
+            }
+
+            mItemInfoBeanList = homeBean.list;
+            mPictureUrls = homeBean.picture;
+
+            state = checkResResult(mItemInfoBeanList);
+            if (state != LoadingPager.LoadedResult.SUCCESS) {//出现了问题,mItemInfoBeanList.size==0
+                return state;
+            }
+
+            state = checkResResult(mPictureUrls);
+            if (state != LoadingPager.LoadedResult.SUCCESS) {//出现了问题,mPictureUrls.size==0
+                return state;
+            }
+
+            return state;//这个时候的state肯定就是success
+        } catch (Exception e) {
+            e.printStackTrace();
+            return LoadingPager.LoadedResult.ERROR;
+        }
+    }
+
+    /**
+     * @return
+     * @des 1.决定成功视图长什么样子-->xml
+     * @des 2.数据和视图的绑定-->因为此时数据已经加载回来
+     * @call 外界需要加载数据的时候, 如果调用了triggerLoadData()方法的时候,数据加载完成,数据加载成功
+     */
+    @Override
+    public View initSuccessView() {
+        //view->successView-->ListView
+        ListView listView = ListViewFactory.createListView();
+
+        //dataSets-->网络请求回来的数据-->mDatas
+
+        //给listview添加一个轮播图
+        HomePictureHolder homePictureHolder = new HomePictureHolder();
+        listView.addHeaderView(homePictureHolder.mHolderView);//headerView-->是一个经过了数据绑定的View(data+view)
+        homePictureHolder.setDataAndRefreshHolderView(mPictureUrls);
+
+
+        //data+view
+        mAdapter = new HomeBaseAdapter(listView, mItemInfoBeanList);
+        listView.setAdapter(mAdapter);
+
+        return listView;
+    }
+
+    /*class HomeBaseAdapter extends MyBaseAdapter<String> {
+        public HomeBaseAdapter(List<String> dataSource) {
+            super(dataSource);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            *//*--------------- 决定根视图长什么样子 ---------------*//*
+            ViewHolder holder = null;
+            if (convertView == null) {
+                //创建Viewholder
+                holder = new ViewHolder();
+                //初始化根视图
+                convertView = View.inflate(UIUtils.getContext(), R.layout.item_temp, null);
+
+                //找出孩子对象
+                holder.mTvTemp1 = (TextView) convertView.findViewById(R.id.tmp_tv_1);
+                holder.mTvTemp2 = (TextView) convertView.findViewById(R.id.tmp_tv_2);
+
+                //convertView去<找>一个对象,然后绑定在自己身上
+                convertView.setTag(holder);
+            } else {
+                //从convertview身上找出对应绑定的对象
+                holder = (ViewHolder) convertView.getTag();
+            }
+            *//*--------------- 得到数据,绑定数据 ---------------*//*
+            //data
+            String data = mDatas.get(position);
+
+            //data+view
+            holder.mTvTemp1.setText("我是头-" + data);
+            holder.mTvTemp2.setText("我是尾巴-" + data);
+            return convertView;
+        }
+
+        *//*
+         做ViewHolder需要什么条件?
+         普通类,持有根视图所对应的孩子对象-->严格
+         普通类,持有根视图-->宽松-->就可以通过findViewByid找出孩子对象,转换成成员变量即可
+
+         *//*
+        class ViewHolder {
+            TextView mTvTemp1;
+            TextView mTvTemp2;
+        }
+    }*/
+
+
+    /* class HomeBaseAdapter extends MyBaseAdapter<String> {
+         public HomeBaseAdapter(List<String> dataSource) {
+             super(dataSource);
+         }
+
+         @Override
+         public View getView(int position, View convertView, ViewGroup parent) {
+             *//*--------------- 决定根视图长什么样子 ---------------*//*
+            ItemHolder homeHolder = null;
+            if (convertView == null) {
+                //创建Viewholder
+                homeHolder = new ItemHolder();
+            } else {
+                homeHolder = (ItemHolder) convertView.getTag();
+            }
+            *//*--------------- 得到数据,绑定数据 ---------------*//*
+
+            //data
+            String data = mDatas.get(position);
+
+            //data+view
+           homeHolder.setDataAndRefreshHolderView(data);
+
+            return homeHolder.mHolderView;
+        }
+
+    }*/
+    class HomeBaseAdapter extends ItemAdapter {
+        public HomeBaseAdapter(AbsListView absListView, List<ItemInfoBean> dataSource) {
+            super(absListView, dataSource);
+        }
+
+        /**
+         * @return 2.具体实现加载更多
+         * @des 真正的在子线程中加载更多
+         */
+        @Override
+        public List<ItemInfoBean> onLoadMore() throws Exception {
+            SystemClock.sleep(3000);
+            HomeBean homeBean = mProtocol.loadData(mItemInfoBeanList.size());
+            if (homeBean != null) {
+                List<ItemInfoBean> loadmoreList = homeBean.list;
+                return loadmoreList;
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        //添加观察者
+        //adapter-->所有的观察者
+        if (mAdapter != null) {
+            List<ItemHolder> itemHolders = mAdapter.mItemHolders;
+            for (ItemHolder itemHolder : itemHolders) {
+                DownLoadManager.getInstance().addObserver(itemHolder);
+
+                //手动发布最新的DownLoadInfo的状态
+                DownLoadInfo downLoadInfo = DownLoadManager.getInstance().getDownLoadInfo(itemHolder.mData);
+                DownLoadManager.getInstance().notifyObservers(downLoadInfo);
+            }
+
+        }
+        super.onResume();
+    }
+
+    @Override
+    public void onPause() {
+        //移除观察者
+        if (mAdapter != null) {
+            List<ItemHolder> itemHolders = mAdapter.mItemHolders;
+            for (ItemHolder itemHolder : itemHolders) {
+                DownLoadManager.getInstance().deleteObserver(itemHolder);
+            }
+        }
+        super.onPause();
+    }
+}

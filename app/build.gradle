@@ -1,0 +1,36 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '23.0.3'
+
+    defaultConfig {
+        applicationId "com.itheima.googleplay_24"
+        minSdkVersion 11
+        targetSdkVersion 23
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:appcompat-v7:23.3.0'
+    compile 'com.android.support:support-v4:23.3.0'
+    compile files('libs/butterknife-6.0.0.jar')
+    //    compile 'com.squareup.okhttp:okhttp:2.7.5'
+    compile files('libs/okhttp-2.7.5.jar')
+    compile files('libs/okio-1.6.0.jar')
+    compile files('libs/gson-2.2.1.jar')
+    compile files('libs/fastjson-1.1.43.jar')
+    compile(name: 'PagerSlidingTabStrip-release', ext: 'aar')
+    compile files('libs/nineoldandroids-2.2.0.jar')
+    compile files('libs/universal-image-loader-1.9.5.jar')
+}
