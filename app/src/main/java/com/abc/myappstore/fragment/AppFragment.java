@@ -59,17 +59,22 @@ public class AppFragment extends BaseFragment {
     public View initSuccessView() {
         ListView listView = ListViewFactory.createListView();
 
-        mAdapter = new AppAdapter(MyApplication.getContext(), mDatas);
+        mAdapter = new AppAdapter(listView, mDatas);
         listView.setAdapter(mAdapter);
         return listView;
     }
 
     class AppAdapter extends ItemAdapter {
 
-        public AppAdapter(Context context, List<ItemInfoBean> dataSource) {
-            super(context, dataSource);
+        public AppAdapter(AbsListView absListView, List<ItemInfoBean> dataSource) {
+            super(absListView, dataSource);
         }
 
+        @Override
+        public List<ItemInfoBean> onLoadMore() throws Exception {
+            SystemClock.sleep(3000);
+            return mProtocol.loadData(mDatas.size());
+        }
     }
 
 

@@ -3,7 +3,6 @@ package com.abc.myappstore.fragment;
 import android.view.View;
 import android.widget.AbsListView;
 import android.widget.ListView;
-
 import com.abc.myappstore.base.BaseFragment;
 import com.abc.myappstore.base.BaseHolder;
 import com.abc.myappstore.base.LoadingPager;

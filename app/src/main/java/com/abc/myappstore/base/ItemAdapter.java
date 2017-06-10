@@ -24,8 +24,8 @@ public class ItemAdapter extends SuperBaseAdapter<ItemInfoBean> {
 
     public List<ItemHolder> mItemHolders = new ArrayList<>();
 
-    public ItemAdapter(Context context, List<ItemInfoBean> dataSource) {
-        super(context, dataSource);
+    public ItemAdapter(AbsListView absListView, List<ItemInfoBean> dataSource) {
+        super(absListView, dataSource);
     }
 
     /**
@@ -45,10 +45,37 @@ public class ItemAdapter extends SuperBaseAdapter<ItemInfoBean> {
     }
 
     /**
-     * 这尼玛什么鬼
+     * 覆写hasLoadMore方法,决定有加载更多
+     *
+     * @return
      */
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public boolean hasLoadMore() {
+        return true;
+    }
 
+
+    /**
+     * 实现普通条目的点击事件
+     *
+     * @param parent
+     * @param view
+     * @param position
+     * @param id
+     */
+    @Override
+    public void onNormalItemClick(AdapterView<?> parent, View view, int position, long id) {
+        //data
+        ItemInfoBean itemInfoBean = mDataSource.get(position);
+
+        Intent intent = new Intent(UIUtils.getContext(), DetailActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        String packageName = itemInfoBean.packageName;
+        String name = itemInfoBean.name;
+        intent.putExtra("packageName", packageName);
+        intent.putExtra("name", name);
+
+        UIUtils.getContext().startActivity(intent);
     }
 }
